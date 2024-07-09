@@ -100,7 +100,13 @@ let rec concat = function
 (* Exercise: product test [★★]
 
 Unit test the function product that you wrote in an exercise above. *)
-(* TODO:  *)
+(* the dune project with ounit2 tests is in ./numberListProductWithUnitTests
+  Read the dune guide https://dune.readthedocs.io/en/stable/howto/install-dune.html after dune setup run in terminal:
+  
+   cd ./numberListProductWithUnitTests
+   dune build
+   dune exec ./test_number_list_product.exe
+*)
 
 (* Exercise: patterns [★★★]
   Using pattern matching, write three functions, one for each of the following properties. 

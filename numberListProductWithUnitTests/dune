@@ -1,0 +1,3 @@
+(executable
+ (name test_number_list_product)
+ (libraries ounit2))
