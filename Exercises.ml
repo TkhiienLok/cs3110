@@ -1,5 +1,5 @@
 (* https://cs3110.github.io/textbook/chapters/basics/exercises.html *)
-
+open Stdlib
 let last a = List.nth a (List.length a - 1);;
 
 let rec last2 a = match a with
@@ -32,8 +32,34 @@ let rev list =
     in
     aux [] list;;
 
+let compare_chars c1 c2 =
+  Char.equal c1 c2;;
 
-let is_palindrome lst = lst = rev lst;;
+
+(** [is_palindrome lst] is true when [lst] is polindrom. *)
+let reverse_half lst = 
+  let half_len = (List.length lst ) / 2 in
+    let rec aux acc = function
+    | [] -> acc
+    | h :: t -> if List.length acc < half_len then aux (h :: acc) t else acc
+
+  in
+  aux [] lst;; 
+  
+let split_list_in_half lst =
+  let half_len = (List.length lst ) / 2 in
+  let rec split_list left_list right_list = function
+    | [] -> left_list, right_list
+    | hd :: tl ->   
+      if List.length left_list < half_len then split_list (hd :: left_list) right_list tl
+      else if List.length tl = List.length left_list then split_list left_list right_list tl
+      else split_list left_list (right_list @ [hd]) tl
+    in  split_list [] [] lst;;
+
+let is_palindrome lst = 
+  let left_list_reversed, right_list = split_list_in_half lst in
+  List.equal compare_chars left_list_reversed right_list
+;;
 
 
 (* Define a function that computes the sign (1, 0, or -1) of an integer. Use a nested if expression. Test your function by applying it to a few inputs.*)
@@ -44,12 +70,11 @@ let is_palindrome lst = lst = rev lst;;
 |  exception Division_by_zero | _ -> 0
 
 (* Define a function that computes the area of a circle given its radius. Test your function with assert. *)
-
-let circle_area r = (r ** 2.) *. 3.14;;
+let circle_area r = (r **. 2.) *. 3.14;;
 
 (* Define a function that computes the root mean square of two numbers—i.e. sqrt{(x^2 + y^2) / 2} . Test your function with assert. *)
 
-let root_mean_square x y = ((x ** 2. +. y ** 2.) /. 2.) ** 0.5;;
+let root_mean_square x y = ((x **. 2. +. y **. 2.) /. 2.) **. 0.5;;
 
 (* Define a function that takes an integer d and string m as input and returns true just when d and m form a valid date. Here, a valid date has a month that is one of the following abbreviations: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sept, Oct, Nov, Dec. And the day must be a number that is between 1 and the minimum number of days in that month, inclusive. For example, if the month is Jan, then the day is between 1 and 31, inclusive, whereas if the month is Feb, then the day is between 1 and 28, inclusive. *)
 let date d m =
@@ -59,7 +84,7 @@ let date d m =
   | "Feb"  -> d >= 1 && d <= 29 
   | _ ->  false;;
 
-
+(* the function stops working if not opening Stdlib explicitly case istalled base and core libraries shaddow Stdlib operators *)
 let time_function f x =
   let start_time = Sys.time () in
   let result = f x in
@@ -67,6 +92,13 @@ let time_function f x =
   Printf.printf "Execution time: %.3fs\n" (end_time -. start_time);
   result
 
+  let time f x =
+    let start = Unix.gettimeofday ()
+    in let res = f x
+    in let stop = Unix.gettimeofday ()
+    in let str = Printf.sprintf  "Execution time: %fs\n%!" (stop -. start)
+    in
+       res
 (* Define a recursive function fib : int -> int, such that fib n is the nth number in the Fibonacci sequence, which is 1, 1, 2, 3, 5, 8, 13, … That is: *)
 
 let rec fib = function
@@ -157,4 +189,23 @@ let fifth_element lst =
   if List.length lst >= 5 then List.nth lst (4) else 0;;
 
 let sorted_discended lst = 
-  List.rev (List.sort Stdlib.compare lst); 
+  List.rev (List.sort Stdlib.compare lst);;
+
+(* Exercise: library puzzle [★★★] 26.07.2024 *) 
+
+(** [last_el lst] is the last element of a [lst]. The [lst] must be non-empty. *)
+let last_el lst = 
+  if (List.length lst) < 0 then invalid_arg "The list must be not empty";
+  List.nth lst (List.length lst - 1);;
+
+
+(** [any_zeros lst] is true if and only if [lst] contains at least one 0. *)
+
+let  any_zeros_v1 lst = 
+  try
+    match (List.find (fun el -> el = 0) lst) with 
+      | _ -> true
+  with
+  | Not_found -> false;;
+
+let  any_zeros_v2 lst = List.exists (fun el -> el = 0) lst;;
