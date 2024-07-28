@@ -46,19 +46,27 @@ let reverse_half lst =
   in
   aux [] lst;; 
   
-let split_list_in_half lst =
-  let half_len = (List.length lst ) / 2 in
-  let rec split_list left_list right_list = function
+let split_list_in_half lst = (* Execution time: 84.607s with @ operator on 102912 elements and 44.377s with :: operator, Execution time: 0.00276s 🎉 without applying List.length on any of recursion step *)
+  let length = List.length lst in
+  let half_len = length / 2 in
+  let rec split_list left_list right_list list_to_split_length = function
     | [] -> left_list, right_list
-    | hd :: tl ->   
-      if List.length left_list < half_len then split_list (hd :: left_list) right_list tl
-      else if List.length tl = List.length left_list then split_list left_list right_list tl
-      else split_list left_list (right_list @ [hd]) tl
-    in  split_list [] [] lst;;
+    | hd :: tl ->
+      let tail_length = list_to_split_length - 1 in 
+        if (length - tail_length) <= half_len
+          then split_list (hd :: left_list) tl tail_length tl
+        else if (list_to_split_length > half_len) then left_list, tl
+        else left_list, hd :: tl
 
-let is_palindrome lst = 
+    in  split_list [] [] length lst ;;
+
+let is_chars_palindrome lst =  (* Execution time: 44.616s on list of 102912 char elements, e.g. n_list_of_chars multiplied by 400, but when tail recursive 0.00323s 🎉 *)
   let left_list_reversed, right_list = split_list_in_half lst in
   List.equal compare_chars left_list_reversed right_list
+;;
+let is_ints_palindrome lst =
+  let left_list_reversed, right_list = split_list_in_half lst in
+  List.equal (fun x1 x2 -> x1 = x2) left_list_reversed (rev right_list)
 ;;
 
 
@@ -89,16 +97,9 @@ let time_function f x =
   let start_time = Sys.time () in
   let result = f x in
   let end_time = Sys.time () in
-  Printf.printf "Execution time: %.3fs\n" (end_time -. start_time);
+  Printf.printf "Execution time: %.5fs\n" (end_time -. start_time);
   result
 
-  let time f x =
-    let start = Unix.gettimeofday ()
-    in let res = f x
-    in let stop = Unix.gettimeofday ()
-    in let str = Printf.sprintf  "Execution time: %fs\n%!" (stop -. start)
-    in
-       res
 (* Define a recursive function fib : int -> int, such that fib n is the nth number in the Fibonacci sequence, which is 1, 1, 2, 3, 5, 8, 13, … That is: *)
 
 let rec fib = function
@@ -209,3 +210,42 @@ let  any_zeros_v1 lst =
   | Not_found -> false;;
 
 let  any_zeros_v2 lst = List.exists (fun el -> el = 0) lst;;
+
+
+(* Generating list of numbers till n *)
+
+let rec unfold_right f init =
+  match f init with
+  | None -> []
+  | Some (x, next) -> x :: unfold_right f next
+
+(** [range n] is a generated list of natural numbers of length [n] starting from 1 *)
+let range n =
+  let irange x = if x > n then None else Some (x, x + 1) in
+  unfold_right irange 1
+
+(** [n_list_of_chars n] is generated list of chars FOR TESTING PURPOSES *)
+let all_chars =
+  let rec aux i acc =
+    if i < 0 then acc else aux (i - 1) (Char.chr i::acc)
+  in aux 255 []
+
+(** [n_list_of_chars n] is generated list of chars multiplied by [n] - FOR TESTING PURPOSES *)
+let n_list_of_chars n = 
+ let rec aux i acc =
+  if i < 0 then acc else aux (i -1 ) (all_chars @ acc)
+
+in aux n [] 
+(* Exercise: take drop [★★★] *)
+
+let take n lst = (* if bad version with calling List.length on each step - Execution time: 27.945s on list of 102912 elenments, but if tail recursive Execution time: 0.006s 🎉 on 102911 elements*)
+  let lst_length = List.length lst in 
+  if lst_length <= n then lst else 
+    let rec take_n_of_lst lst' lst_length' =
+      match lst' with 
+      | [] -> []
+      | hd :: tl -> let tail_length' = lst_length' - 1 in 
+        if tail_length' >= lst_length - n 
+                      then hd :: (take_n_of_lst tl tail_length') 
+                      else take_n_of_lst tl tail_length'
+    in take_n_of_lst lst lst_length;;
